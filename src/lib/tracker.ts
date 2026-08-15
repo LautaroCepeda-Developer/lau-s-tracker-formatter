@@ -1,4 +1,4 @@
-const TRACKER_REGEX = /(?:https?|udp):\/\/[^\s]+/gi;
+const TRACKER_REGEX = /(?:https?|udp):\/\/.*?(?=(?:https?|udp):\/\/|\s|$)/gi;
 
 interface TrackerProcessingOutput {
     total: number,
