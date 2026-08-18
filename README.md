@@ -1,43 +1,42 @@
-# Astro Starter Kit: Minimal
+# Lau's Tracker Formatter
 
-```sh
-npm create astro@latest -- --template minimal
-```
+Herramienta web estática para limpiar, organizar y formatear listas de trackers BitTorrent.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Permite pegar trackers en distintos formatos, incluso cuando se encuentran concatenados en una misma línea, detectar duplicados y generar una lista limpia con el formato elegido.
 
-## 🚀 Project Structure
+## Características
 
-Inside of your Astro project, you'll see the following folders and files:
+- Detección de trackers `http://`, `https://` y `udp://`.
+- Detección de trackers aunque estén concatenados sin espacios ni saltos de línea.
+- Eliminación automática de trackers duplicados.
+- Formato de salida:
+  - Un tracker por línea.
+  - Una línea en blanco entre trackers.
+- Procesamiento completamente local en el navegador.
+- Indicadores de trackers detectados, únicos y duplicados.
+- Copiado del resultado al portapapeles.
+- Atajos de teclado.
+- Soporte para español e inglés.
+- Página 404 localizada.
+- SEO básico.
+- Open Graph y Twitter/X Cards.
+- `robots.txt`.
+- Sitemap automático.
+- Sitio completamente estático.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+## Tecnologías
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+- [Astro](https://astro.build/)
+- TypeScript
+- HTML / CSS
+- JavaScript
+- Netlify
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Visitar sitio web
 
-Any static assets, like images, can be placed in the `public/` directory.
+[Lau's Tracker Formatter](https://lau-tracker-formatter.netlify.app/)
 
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Pendiente
+* Convertir la aplicación en PWA.
+* Añadir soporte offline mediante Service Worker.
+* Añadir manifest e iconos para instalación como aplicación.
