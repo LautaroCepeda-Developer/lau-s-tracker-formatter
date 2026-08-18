@@ -12,7 +12,7 @@ const {
     translations,
     canonicalURL,
     alternateURL,
-    noIndex = false,
+    noIndex,
 } = Astro.props;
 
 const isSpanish = translations.lang === "es";
@@ -66,8 +66,9 @@ const alternateLang = isSpanish ? "en" : "es";
         <meta name="twitter:title" content={translations.title}/>
         <meta name="twitter:description" content={translations.description}/>
         <meta name="twitter:image" content={new URL("/og-image.png", Astro.site)}/>
+        )}
 
-        <meta name="robots" content="noindex, nofollow"/>)}
+        {noIndex && (<meta name="robots" content="noindex, nofollow"/>)}
         <slot name="head" />
     </head>
 
