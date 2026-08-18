@@ -1,0 +1,565 @@
+---
+import type { SiteTranslations } from "../i18n/i18n.types";
+import LanguageSelector from "./LanguageSelector.astro";
+
+interface Props {
+    translations: SiteTranslations;
+}
+
+const { translations } = Astro.props;
+---
+
+<main class="app" data-no-clipboard-permission={translations.noClipboardPermission}>
+    <header class="header">
+        <div class="logo">TF</div>
+
+        <div class="header-content">
+            <div class="title-row">
+                <h1>{translations.title}</h1>
+
+                <LanguageSelector currentLanguage={translations.lang} />
+            </div>
+
+            <p>{translations.description}</p>
+        </div>
+    </header>
+
+    <section class="panel">
+        <div class="section-header">
+            <div>
+                <h2>{translations.trackers}</h2>
+                <p>{translations.trackersDescription}</p>
+            </div>
+
+            <button id="clearButton" class="secondary-button">
+                {translations.clear}
+            </button>
+        </div>
+
+        <textarea
+            id="input"
+            placeholder={`${translations.pasteYourTrackers}
+
+${translations.example}:
+https://tracker.example.com/announce
+udp://tracker.example.org:6969/announce
+http://tracker.example.net/announce`}
+            spellcheck="false"
+        ></textarea>
+    </section>
+
+    <section class="options">
+        <div>
+            <h2>{translations.format}</h2>
+            <p>{translations.chooseHowToSeparateTrackers}</p>
+        </div>
+
+        <div class="radio-group">
+            <label class="radio-option">
+                <input
+                    type="radio"
+                    name="separator"
+                    value="single"
+                    data-value="&#10;"
+                    checked
+                />
+                <span>{translations.separationOnePerLine}</span>
+            </label>
+
+            <label class="radio-option">
+                <input
+                    type="radio"
+                    name="separator"
+                    value="blank"
+                    data-value="&#10;&#10;"
+                />
+                <span>{translations.separationBlankLine}</span>
+            </label>
+        </div>
+    </section>
+
+    <section class="stats">
+        <div class="stat">
+            <span id="total">0</span>
+            <small>{translations.detected}</small>
+        </div>
+
+        <div class="stat">
+            <span id="unique">0</span>
+            <small>{translations.unique}</small>
+        </div>
+
+        <div class="stat">
+            <span id="duplicates">0</span>
+            <small>{translations.duplicates}</small>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="section-header">
+            <div>
+                <h2>{translations.result}</h2>
+                <p>{translations.resultDescription}</p>
+            </div>
+
+            <button id="copyButton" class="primary-button" data-copied-text={translations.copied}>
+                {translations.copy}
+            </button>
+        </div>
+
+        <textarea
+            id="output"
+            readonly
+            placeholder={translations.outputPlaceholder}
+            spellcheck="false"
+        ></textarea>
+
+        <div id="emptyState" class="empty-state" hidden>
+            {translations.noTrackersDetected}
+        </div>
+    </section>
+
+    <footer>
+        <span>{translations.title}</span>
+        <span>{translations.localProcessing}</span>
+    </footer>
+</main>
+
+<script>
+    import {
+        processTrackers,
+        formatTrackers,
+    } from "../lib/tracker";
+
+    const app = document.querySelector<HTMLElement>(".app")
+
+    const input =
+        document.querySelector<HTMLTextAreaElement>("#input");
+
+    const output =
+        document.querySelector<HTMLTextAreaElement>("#output");
+
+    const total =
+        document.querySelector<HTMLElement>("#total");
+
+    const unique =
+        document.querySelector<HTMLElement>("#unique");
+
+    const duplicates =
+        document.querySelector<HTMLElement>("#duplicates");
+
+    const clearButton =
+        document.querySelector<HTMLButtonElement>("#clearButton");
+
+    const copyButton =
+        document.querySelector<HTMLButtonElement>("#copyButton");
+
+    const separatorInputs =
+        document.querySelectorAll<HTMLInputElement>(
+            'input[name="separator"]',
+        );
+
+    const emptyState =
+    document.querySelector<HTMLElement>("#emptyState");
+
+    function update() {
+        if (!input || !output) return;
+
+        const result = processTrackers(input.value);
+
+        const selectedSeparator =
+            document.querySelector<HTMLInputElement>(
+                'input[name="separator"]:checked',
+            )?.dataset.value;
+
+        if (emptyState) {
+            emptyState.hidden = result.trackers.length > 0;
+        };
+
+        output.value = formatTrackers(
+            result.trackers,
+            selectedSeparator,
+        );
+
+        if (total) {
+            total.textContent = String(result.total);
+        }
+
+        if (unique) {
+            unique.textContent = String(result.unique);
+        }
+
+        if (duplicates) {
+            duplicates.textContent = String(result.duplicates);
+        }
+    }
+
+
+    let updateTimer :ReturnType<typeof setTimeout> | undefined;
+    input?.addEventListener("input", () => {
+        if (updateTimer) {
+            clearTimeout(updateTimer);
+        }
+
+        updateTimer = setTimeout(() => {
+            update();
+        }, 100);
+    });
+
+    separatorInputs.forEach((input) => {
+        input.addEventListener("change", update);
+    });
+
+    clearButton?.addEventListener("click", () => {
+        if (input) {
+            input.value = "";
+        }
+
+        update();
+        input?.focus();
+    });
+
+    copyButton?.addEventListener("click", async () => {
+        if (!output?.value) return;
+
+        await navigator.clipboard.writeText(output.value);
+
+        const originalText = copyButton.textContent;
+        const copiedText = copyButton.dataset.copiedText;
+
+        copyButton.classList.add("copied");
+        
+        copyButton.textContent = copiedText!
+
+        setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.classList.remove("copied");
+        }, 1500);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.ctrlKey && event.key === "Enter") {
+            event.preventDefault();
+
+            output?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+
+            setTimeout(() => {
+                copyButton?.focus();
+            }, 400);
+        }
+    });
+
+    document.addEventListener("keydown", async (event) => {
+        if (
+            event.ctrlKey &&
+            event.shiftKey &&
+            event.key.toLowerCase() === "v"
+        ) {
+            event.preventDefault();
+
+            try {
+                const text = await navigator.clipboard.readText();
+
+                if (!input) return;
+
+                input.value = text;
+
+                update();
+
+                input.focus();
+            } catch {
+                console.warn(
+                    app!.dataset.noClipboardPermission!
+                );
+            }
+        }
+    });
+
+    update();
+</script>
+
+<style>
+    .app {
+        width: min(900px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 64px 0 32px;
+    }
+
+    .header {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 32px;
+    }
+
+    .logo {
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: #6366f1;
+        color: white;
+        font-size: 17px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        box-shadow: 0 8px 30px rgba(99, 102, 241, 0.25);
+    }
+
+    .header-content {
+        flex: 1;
+    }
+
+    .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    h1,
+    h2,
+    p {
+        margin: 0;
+    }
+
+    h1 {
+        font-size: 28px;
+        line-height: 1.2;
+        letter-spacing: -0.8px;
+    }
+
+    h2 {
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    .header p,
+    .section-header p,
+    .options p {
+        margin-top: 5px;
+        color: #8b93a7;
+        font-size: 13px;
+    }
+
+    .panel {
+        padding: 20px;
+        border: 1px solid #252a36;
+        border-radius: 16px;
+        background: rgba(20, 23, 31, 0.85);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+    }
+
+    textarea {
+        display: block;
+        width: 100%;
+        min-height: 220px;
+        resize: vertical;
+        padding: 16px;
+        border: 1px solid #2c3240;
+        border-radius: 10px;
+        outline: none;
+        color: #e5e7eb;
+        background: #0c0f14;
+        font-family:
+            "Cascadia Code",
+            "Fira Code",
+            Consolas,
+            monospace;
+        font-size: 13px;
+        line-height: 1.65;
+        transition:
+            border-color 0.15s,
+            box-shadow 0.15s;
+    }
+
+    textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    }
+
+    textarea::placeholder {
+        color: #4f5666;
+    }
+
+    #output {
+        min-height: 250px;
+        color: #a7f3d0;
+    }
+
+    .options {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        margin: 16px 0;
+        padding: 18px 20px;
+        border: 1px solid #252a36;
+        border-radius: 16px;
+        background: rgba(20, 23, 31, 0.6);
+    }
+
+    .radio-group {
+        display: flex;
+        gap: 10px;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 12px;
+        border: 1px solid #2c3240;
+        border-radius: 9px;
+        color: #b9c0cf;
+        background: #151922;
+        cursor: pointer;
+        font-size: 13px;
+        transition:
+            border-color 0.15s,
+            background 0.15s;
+    }
+
+    .radio-option:has(input:checked) {
+        border-color: #6366f1;
+        color: #e5e7eb;
+        background: #1b1d35;
+    }
+
+    .radio-option input {
+        accent-color: #6366f1;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 16px 0;
+    }
+
+    .stat {
+        padding: 15px;
+        border: 1px solid #252a36;
+        border-radius: 12px;
+        background: rgba(20, 23, 31, 0.6);
+    }
+
+    .stat span {
+        display: block;
+        color: #f3f4f6;
+        font-size: 21px;
+        font-weight: 700;
+    }
+
+    .stat small {
+        color: #727b8f;
+        font-size: 12px;
+    }
+
+    button {
+        border: 0;
+        border-radius: 8px;
+        padding: 9px 13px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition:
+            transform 0.1s,
+            opacity 0.15s;
+    }
+
+    button:hover {
+        opacity: 0.9;
+    }
+
+    button:active {
+        transform: scale(0.97);
+    }
+
+    .primary-button {
+        color: white;
+        background: #6366f1;
+    }
+
+    .secondary-button {
+        border: 1px solid #2c3240;
+        color: #aeb6c7;
+        background: #171b24;
+    }
+
+    footer {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        padding: 0 4px;
+        color: #555e70;
+        font-size: 11px;
+    }
+
+    .empty-state {
+        margin-top: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        color: #fbbf24;
+        background: rgba(251, 191, 36, 0.08);
+        border: 1px solid rgba(251, 191, 36, 0.15);
+        font-size: 12px;
+    }
+
+    .primary-button.copied {
+        background: #059669;
+    }
+
+    @media (max-width: 650px) {
+        .app {
+            padding-top: 32px;
+        }
+
+        .title-row {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .options {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .radio-group {
+            flex-direction: column;
+        }
+
+        .radio-option {
+            width: 100%;
+        }
+
+        .stats {
+            gap: 8px;
+        }
+
+        .stat {
+            padding: 12px;
+        }
+
+        .stat span {
+            font-size: 18px;
+        }
+
+        footer {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+</style>

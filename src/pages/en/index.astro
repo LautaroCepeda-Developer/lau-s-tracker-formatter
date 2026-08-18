@@ -1,0 +1,18 @@
+---
+import Layout from "../../layouts/Layout.astro"
+import TrackerFormatter from "../../components/TrackerFormatter.astro";
+import en from "../../i18n/en";
+
+const translations = en;
+
+const canonicalURL = new URL("/en/", Astro.url);
+const alternateURL = new URL("/", Astro.url);
+---
+
+<Layout
+    translations={translations}
+    canonicalURL={canonicalURL}
+    alternateURL={alternateURL}
+>
+    <TrackerFormatter translations={translations} />
+</Layout>

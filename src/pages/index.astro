@@ -1,17 +1,18 @@
 ---
+import Layout from "../layouts/Layout.astro";
+import TrackerFormatter from "../components/TrackerFormatter.astro";
+import es from "../i18n/es";
 
+const translations = es;
+
+const canonicalURL = new URL("/", Astro.url);
+const alternateURL = new URL("/en/", Astro.url);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout
+    translations={translations}
+    canonicalURL={canonicalURL}
+    alternateURL={alternateURL}
+>
+    <TrackerFormatter translations={translations} />
+</Layout>

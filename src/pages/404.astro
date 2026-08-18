@@ -1,0 +1,97 @@
+---
+import Layout from "../layouts/Layout.astro";
+import es from "../i18n/es";
+import en from "../i18n/en";
+
+const canonicalURL = new URL("/404", Astro.url);
+const alternateURL = new URL("/", Astro.url);
+---
+
+<Layout
+    translations={es}
+    canonicalURL={canonicalURL}
+    alternateURL={alternateURL}
+    noIndex
+>
+    <main class="not-found">
+        <div class="code">404</div>
+
+        <div id="spanish-content">
+            <h1>{es.notFoundTitle}</h1>
+            <p>{es.notFoundDescription}</p>
+            <a href="/">{es.backToFormatter}</a>
+        </div>
+
+        <div id="english-content" hidden lang="en">
+            <h1>{en.notFoundTitle}</h1>
+            <p>{en.notFoundDescription}</p>
+            <a href="/en/">{en.backToFormatter}</a>
+        </div>
+    </main>
+
+    <script>
+        const isEnglish =
+            window.location.pathname === "/en" ||
+            window.location.pathname.startsWith("/en/");
+
+        const spanish =
+            document.querySelector("#spanish-content");
+
+        const english =
+            document.querySelector("#english-content");
+
+        document.title =
+            "Página no encontrada — Lau's Tracker Formatter";
+
+        if (isEnglish) {
+            spanish?.setAttribute("hidden", "");
+            english?.removeAttribute("hidden");
+
+            document.documentElement.lang = "en";
+
+            document.title =
+                "Page not found — Lau's Tracker Formatter";
+        }
+    </script>
+
+    <style>
+        .not-found {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .code {
+            color: #6366f1;
+            font-size: 96px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -6px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 26px;
+        }
+
+        p {
+            margin: 0 0 20px;
+            color: #8b93a7;
+        }
+
+        a {
+            color: #a5b4fc;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</Layout>
