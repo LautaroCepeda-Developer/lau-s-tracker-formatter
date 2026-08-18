@@ -18,7 +18,7 @@ const es : SiteTranslations = {
     pasteYourTrackers: "Pegá tus trackers aquí...",
     chooseHowToSeparateTrackers: "Elegí cómo separar los trackers.",
     separationOnePerLine: "Uno debajo del otro",
-    separationBlankLine: "Una línea en blanco",
+    separationBlankLine: "Una línea en blanco (el separador más habitual)",
     resultDescription: "Los trackers duplicados fueron eliminados automáticamente.",
     outputPlaceholder: "El resultado aparecerá aquí...",
     localProcessing: "Procesamiento 100% local",
